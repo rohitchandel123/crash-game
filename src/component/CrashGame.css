@@ -1,39 +1,96 @@
 .game-wrapper{
     width:100%;
-    height:500px;
+    height:700px;
     display: flex;
     justify-content: center;
-    background-color:aliceblue;
+    background-color: rgb(33, 55, 67);
 }
 
 .game-container{
-    width: 70%;
+    width: 80%;
     display: flex;
     justify-content: center;
     align-items: center;
     gap:1%;
 }
 
+.game-display-container{
+    position: relative;
+
+    width: 100%;
+    height: 100%;
+}
+
+.background-image{
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    
+    background-image: url('./../assets/background-image-6.jpg');
+    background-size: cover;
+
+}
+
 .game-display{
+    position: absolute;
     width: 100%;
     height:100%;
-
-    background-image: url('../assets/background-image-1.png');
-    object-fit: contain;
-    background-color: lightblue;
 }
 
 .game-display img{
+    width: 20%;
     margin-top: 30%;
     margin-left: 10%;
 }
 
 .game-info{
-    height: 100%;
+    height: auto;
     width: 40%;
-    background-color: lightgrey;
+    padding: 6% 2% 6% 2%;
+    color: white;
+    background-color: #2f4553;
 }
 
 .plane{
     width: 25%;
+}
+
+.error-message{
+    color: red !important;
+    font-size: 14px;
+}
+
+.form-container{
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    width: 50%;
+}
+
+.form-container label{
+    margin-bottom: 3%;
+}
+
+.submit-button{
+    width: 50%;
+    padding: 4% 0% 4% 0%;
+    border:none;
+    border-radius: 4px;
+    color: white;
+    cursor: pointer;
+    margin-top: 6px;
+    background-color: rgb(0, 176, 0);
+}
+
+.submit-button:hover{
+background-color:green;
+}
+
+.input-field{
+    background-color: rgb(33, 55, 67);
+    border: 1px solid rgb(33, 55, 67);
+    border-radius: 3px;
+    color: white;
+    height: 30px;
+    padding: 1% 1% 1% 6%;
 }
