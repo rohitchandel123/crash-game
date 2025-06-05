@@ -54,7 +54,7 @@ function CrashGame() {
     }
     planeTween.current = gsap.to(".box", {
       rotation: angle,
-      y: -200,
+      // y: -200,
       duration: 5,
       ease: "power1.out",
     });
