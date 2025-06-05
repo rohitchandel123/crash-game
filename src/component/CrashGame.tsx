@@ -15,6 +15,10 @@ function CrashGame() {
   const tl = useRef<gsap.core.Timeline | null>(null);
   const [stop, setStop] = useState(false);
   const [showMultiplier, setShowMultiplier] = useState(1);
+  const [balance, setBalance] = useState<number>(10000);
+  const [hasCashout, setHasCashout] = useState<boolean>(false);
+
+  let multiplierCrashValue = useRef(0);
 
   useEffect(() => {
     tl.current = gsap.timeline({ paused: true });
@@ -23,14 +27,14 @@ function CrashGame() {
 
     return () => {
       if (tl.current) tl.current.kill();
-      if (bgTween.current) 
-        bgTween.current.kill();
+      if (bgTween.current) bgTween.current.kill();
     };
   }, []);
 
   useGSAP(
     () => {
       if (start) {
+        setHasCashout(false);
         let crashValue = generateCrashValue();
         displayMultiplier(crashValue);
         if (tl.current) {
@@ -67,6 +71,8 @@ function CrashGame() {
   function handleCrash() {
     setStop(true);
     setStart(false);
+    //modal show
+    //amount add
     console.log("should stop");
   }
 
@@ -96,8 +102,31 @@ function CrashGame() {
       }
       val = val + 0.01;
       setShowMultiplier(val);
-      console.log(val.toFixed(2));
+      // console.log(val.toFixed(2));
     }, 10);
+  }
+
+  function betSubmitted(betAmount: string) {
+    setStart(true);
+    setStop(false);
+    setBalance(balance - Number(betAmount));
+  }
+
+  function handleCashout(betAmount: number) {
+    console.log("handle cashout");
+    multiplierCrashValue.current = Number(showMultiplier.toFixed(2));
+    setHasCashout(true);
+    let winningAmount = betAmount * showMultiplier;
+    console.log("winning amount is", winningAmount.toFixed(2));
+
+    let newBalance: number = Number(balance) + Number(winningAmount.toFixed(2));
+    console.log(
+      `balance ${balance} ${winningAmount} = new balance ${newBalance} `
+    );
+
+    setBalance(newBalance);
+    console.log(showMultiplier);
+    console.log("cashout done");
   }
 
   return (
@@ -111,12 +140,43 @@ function CrashGame() {
               <img src={ProjectImages.PLANE} className="plane" />
 
               <div className="bet-multiplier">
-                <h2>{(start || stop)?showMultiplier.toFixed(2): 1} x</h2>
+                <h2 className={stop ? "has-crashed" : ""}>
+                  {start || stop ? `${showMultiplier.toFixed(2)}X` : ""}
+                </h2>
+
+                {hasCashout || (stop && !hasCashout) ? (
+                <div className="cash-crash-modal">
+                  {hasCashout ? (
+                    <div className="cashout-container">
+                      <h4>Cashed Out <span className="cashout-at"> {multiplierCrashValue.current}x</span></h4>
+                    </div>
+                  ) : (
+                    ""
+                  )}
+                  {stop && !hasCashout ? (
+                    <div className="crash-container">
+                      <h4>Crashed</h4>
+                    </div>
+                  ) : (
+                    ""
+                  )}
+                </div>
+              ) : (
+                ""
+              )}
+              
               </div>
+
+              
             </div>
           </div>
 
           <div className="game-info">
+            <div className={"balance-container"}>
+              Amount:{balance}
+              {/* {stop?"balance-container has-crashed":"balance-container"} */}
+            </div>
+
             <Formik
               initialValues={{
                 betAmount: "",
@@ -126,7 +186,13 @@ function CrashGame() {
                 betAmount: Yup.number().required("Required"),
                 cashoutAt: Yup.number().required("Required"),
               })}
-              onSubmit={() => console.log("submitted")}
+              onSubmit={(values) => {
+                if (!start) {
+                  betSubmitted(values.betAmount);
+                  console.log("bet submitted");
+                } else if (start && !stop)
+                  handleCashout(Number(values.betAmount));
+              }}
             >
               <Form className="form-container">
                 <label htmlFor="betAmount">Bet Amount</label>
@@ -138,7 +204,7 @@ function CrashGame() {
                   onKeyDown={(e: KeyboardEvent) => {
                     if (e.key == "-" || e.key == "e") {
                       e.preventDefault();
-                      console.log("e or - pressed ");
+                      console.log("e or - pressed");
                     }
                   }}
                 />
@@ -168,13 +234,22 @@ function CrashGame() {
                   className="error-message"
                 />
                 <br />
-                <button type="submit" className="submit-button">
-                  Bet
+                <button
+                  type="submit"
+                  className={
+                    hasCashout
+                      ? "submit-button disable-cashout"
+                      : "submit-button"
+                  }
+                  disabled={hasCashout}
+                >
+                  {start && !stop ? "Cashout" : "Bet"}
                 </button>
               </Form>
             </Formik>
             <br />
-            <button onClick={handleClick}>start</button>
+
+            <button onClick={handleClick}>Start</button>
             <button onClick={handleCrash}>Crash / Stop</button>
             <button onClick={generateCrashValue}>Crash at</button>
             <button>{showMultiplier.toFixed(2)}X</button>
