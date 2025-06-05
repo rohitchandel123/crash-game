@@ -94,3 +94,12 @@ background-color:green;
     height: 30px;
     padding: 1% 1% 1% 6%;
 }
+
+.bet-multiplier{
+    position: absolute;
+    left: 50%;
+    top: 40%;
+    font-size: 24px;
+    color: white;
+    /* background-color: #2f4553; */
+}
