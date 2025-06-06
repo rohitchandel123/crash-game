@@ -5,6 +5,8 @@ import gsap from "gsap";
 import { useGSAP } from "@gsap/react";
 import { Formik, Field, Form, ErrorMessage } from "formik";
 import * as Yup from "yup";
+import { toast } from "react-toastify";
+import GameChart from "./GameChart";
 
 gsap.registerPlugin(useGSAP);
 
@@ -17,8 +19,10 @@ function CrashGame() {
   const [showMultiplier, setShowMultiplier] = useState(1);
   const [balance, setBalance] = useState<number>(10000);
   const [hasCashout, setHasCashout] = useState<boolean>(false);
-
-  let multiplierCrashValue = useRef(0);
+  // const [hasCrashed, setHasCrashed] = useState<boolean>(false);
+  const [betAmount, setBetAmount] = useState<number>(0);
+  const autoCashoutRef = useRef<number | null>(null);
+  const multiplierCrashValue = useRef(0);
 
   useEffect(() => {
     tl.current = gsap.timeline({ paused: true });
@@ -30,6 +34,21 @@ function CrashGame() {
       if (bgTween.current) bgTween.current.kill();
     };
   }, []);
+
+  //useEffect showMultiplier
+  useEffect(() => {
+    if (
+      autoCashoutRef.current &&
+      Number(showMultiplier.toFixed(2)) >=
+        Number(autoCashoutRef.current.toFixed(2)) &&
+      !hasCashout
+    ) {
+      console.log("auto cashback at", autoCashoutRef.current);
+      console.log(showMultiplier.toFixed(2), ">=");
+      console.log(autoCashoutRef.current.toFixed(2));
+      handleCashout(betAmount);
+    }
+  }, [showMultiplier]);
 
   useGSAP(
     () => {
@@ -52,28 +71,25 @@ function CrashGame() {
 
       if (stop) {
         if (tl.current) {
-          tl.current.pause();
+          tl.current.kill();
         }
         if (bgTween.current) {
-          bgTween.current.pause();
+          bgTween.current.kill();
         }
       }
     },
     { dependencies: [start, stop], scope: container }
   );
 
-  function handleClick() {
-    setStart(true);
-    setStop(false);
-    console.log("button clicked...");
-  }
+  // function handleClick() {
+  //   setStart(true);
+  //   setStop(false);
+  // }
 
   function handleCrash() {
     setStop(true);
     setStart(false);
-    //modal show
-    //amount add
-    console.log("should stop");
+    // setHasCashout(false);
   }
 
   function generateCrashValue() {
@@ -84,12 +100,8 @@ function CrashGame() {
     if (temp > 0.2) profit = true;
 
     if (profit) {
-      crashValue = (temp - 0.1) * 10;
+      crashValue = (temp - 0.2) * 10;
     } else crashValue = 1;
-
-    console.log(temp);
-    console.log(profit);
-    console.log(crashValue);
     return crashValue;
   }
 
@@ -102,7 +114,6 @@ function CrashGame() {
       }
       val = val + 0.01;
       setShowMultiplier(val);
-      // console.log(val.toFixed(2));
     }, 10);
   }
 
@@ -113,20 +124,12 @@ function CrashGame() {
   }
 
   function handleCashout(betAmount: number) {
-    console.log("handle cashout");
     multiplierCrashValue.current = Number(showMultiplier.toFixed(2));
     setHasCashout(true);
     let winningAmount = betAmount * showMultiplier;
-    console.log("winning amount is", winningAmount.toFixed(2));
 
     let newBalance: number = Number(balance) + Number(winningAmount.toFixed(2));
-    console.log(
-      `balance ${balance} ${winningAmount} = new balance ${newBalance} `
-    );
-
     setBalance(newBalance);
-    console.log(showMultiplier);
-    console.log("cashout done");
   }
 
   return (
@@ -139,41 +142,46 @@ function CrashGame() {
             <div className="game-display">
               <img src={ProjectImages.PLANE} className="plane" />
 
+              <GameChart/>
+
               <div className="bet-multiplier">
                 <h2 className={stop ? "has-crashed" : ""}>
-                  {start || stop ? `${showMultiplier.toFixed(2)}X` : ""}
+                  {start || stop ? `${showMultiplier.toFixed(2)}x` : ""}
                 </h2>
 
                 {hasCashout || (stop && !hasCashout) ? (
-                <div className="cash-crash-modal">
-                  {hasCashout ? (
-                    <div className="cashout-container">
-                      <h4>Cashed Out <span className="cashout-at"> {multiplierCrashValue.current}x</span></h4>
-                    </div>
-                  ) : (
-                    ""
-                  )}
-                  {stop && !hasCashout ? (
-                    <div className="crash-container">
-                      <h4>Crashed</h4>
-                    </div>
-                  ) : (
-                    ""
-                  )}
-                </div>
-              ) : (
-                ""
-              )}
-              
+                  <div className="cash-crash-modal">
+                    {hasCashout ? (
+                      <div className="cashout-container">
+                        <h4>
+                          Cashed Out{" "}
+                          <span className="cashout-at">
+                            {" "}
+                            {multiplierCrashValue.current}x
+                          </span>
+                        </h4>
+                      </div>
+                    ) : (
+                      ""
+                    )}
+                    {stop && !hasCashout ? (
+                      <div className="crash-container">
+                        <h4>Crashed</h4>
+                      </div>
+                    ) : (
+                      ""
+                    )}
+                  </div>
+                ) : (
+                  ""
+                )}
               </div>
-
-              
             </div>
           </div>
 
           <div className="game-info">
             <div className={"balance-container"}>
-              Amount:{balance}
+              Balance: {balance}
               {/* {stop?"balance-container has-crashed":"balance-container"} */}
             </div>
 
@@ -188,8 +196,13 @@ function CrashGame() {
               })}
               onSubmit={(values) => {
                 if (!start) {
-                  betSubmitted(values.betAmount);
-                  console.log("bet submitted");
+                  if (balance - Number(values.betAmount) >= 0) {
+                    setBetAmount(Number(values.betAmount));
+                    console.log("cashout value entered", values.cashoutAt);
+                    autoCashoutRef.current = Number(values.cashoutAt);
+                    console.log("selected cashout at", autoCashoutRef.current);
+                    betSubmitted(values.betAmount);
+                  } else toast.error("Insufficient Funds");
                 } else if (start && !stop)
                   handleCashout(Number(values.betAmount));
               }}
@@ -204,7 +217,6 @@ function CrashGame() {
                   onKeyDown={(e: KeyboardEvent) => {
                     if (e.key == "-" || e.key == "e") {
                       e.preventDefault();
-                      console.log("e or - pressed");
                     }
                   }}
                 />
@@ -224,7 +236,6 @@ function CrashGame() {
                   onKeyDown={(e: KeyboardEvent) => {
                     if (e.key == "-" || e.key == "e") {
                       e.preventDefault();
-                      console.log("e or - pressed ");
                     }
                   }}
                 />
@@ -237,25 +248,65 @@ function CrashGame() {
                 <button
                   type="submit"
                   className={
-                    hasCashout
+                    hasCashout && !stop
                       ? "submit-button disable-cashout"
                       : "submit-button"
                   }
-                  disabled={hasCashout}
+                  disabled={hasCashout && !stop}
                 >
                   {start && !stop ? "Cashout" : "Bet"}
                 </button>
               </Form>
             </Formik>
             <br />
-
-            <button onClick={handleClick}>Start</button>
+            {/* <button onClick={handleClick}>Start</button>
             <button onClick={handleCrash}>Crash / Stop</button>
             <button onClick={generateCrashValue}>Crash at</button>
-            <button>{showMultiplier.toFixed(2)}X</button>
+            <button>{showMultiplier.toFixed(2)}X</button> */}
           </div>
         </div>
       </div>
+
+      {/* <div className="chart-container">
+          <div className="vertical-line"> 
+            
+            <div className="chart-box">
+                10
+            </div>
+            <div className="chart-box">
+                20
+            </div>
+            <div className="chart-box">
+                30
+            </div>
+            <div className="chart-box">
+                30
+            </div>
+            <div className="chart-box">
+                30
+            </div>
+          </div>
+
+          
+          <div className="horizontal-line"> 
+            <div className="chart-box">
+                10
+            </div>
+            <div className="chart-box">
+                10
+            </div>
+            <div className="chart-box">
+                10
+            </div>
+            <div className="chart-box">
+                10
+            </div>
+            <div className="chart-box">
+                10
+            </div>
+
+          </div>
+      </div> */}
     </>
   );
 }
