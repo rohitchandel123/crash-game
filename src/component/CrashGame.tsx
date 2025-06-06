@@ -81,15 +81,9 @@ function CrashGame() {
     { dependencies: [start, stop], scope: container }
   );
 
-  // function handleClick() {
-  //   setStart(true);
-  //   setStop(false);
-  // }
-
   function handleCrash() {
     setStop(true);
     setStart(false);
-    // setHasCashout(false);
   }
 
   function generateCrashValue() {
@@ -142,7 +136,7 @@ function CrashGame() {
             <div className="game-display">
               <img src={ProjectImages.PLANE} className="plane" />
 
-              <GameChart/>
+              <GameChart />
 
               <div className="bet-multiplier">
                 <h2 className={stop ? "has-crashed" : ""}>
@@ -182,7 +176,6 @@ function CrashGame() {
           <div className="game-info">
             <div className={"balance-container"}>
               Balance: {balance}
-              {/* {stop?"balance-container has-crashed":"balance-container"} */}
             </div>
 
             <Formik
@@ -259,55 +252,16 @@ function CrashGame() {
               </Form>
             </Formik>
             <br />
-            {/* <button onClick={handleClick}>Start</button>
-            <button onClick={handleCrash}>Crash / Stop</button>
-            <button onClick={generateCrashValue}>Crash at</button>
-            <button>{showMultiplier.toFixed(2)}X</button> */}
           </div>
         </div>
       </div>
 
-      {/* <div className="chart-container">
-          <div className="vertical-line"> 
-            
-            <div className="chart-box">
-                10
-            </div>
-            <div className="chart-box">
-                20
-            </div>
-            <div className="chart-box">
-                30
-            </div>
-            <div className="chart-box">
-                30
-            </div>
-            <div className="chart-box">
-                30
-            </div>
-          </div>
-
-          
-          <div className="horizontal-line"> 
-            <div className="chart-box">
-                10
-            </div>
-            <div className="chart-box">
-                10
-            </div>
-            <div className="chart-box">
-                10
-            </div>
-            <div className="chart-box">
-                10
-            </div>
-            <div className="chart-box">
-                10
-            </div>
-
-          </div>
-      </div> */}
     </>
   );
 }
 export default CrashGame;
+
+// improve ui
+// chart values sync
+// slow animation
+// crash animation
