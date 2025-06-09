@@ -91,11 +91,11 @@ function CrashGame() {
     let profit = false;
     let crashValue;
 
-    if (temp > 0.1) 
+    if (temp > 0.3) 
       profit = true;
 
     if (profit) {
-      crashValue = (temp - 0) * 10;
+      crashValue = (temp - 0.2) * 10;
     } else crashValue = 1;
     return crashValue;
   }
