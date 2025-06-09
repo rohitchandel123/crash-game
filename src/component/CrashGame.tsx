@@ -43,9 +43,9 @@ function CrashGame() {
         Number(autoCashoutRef.current.toFixed(2)) &&
       !hasCashout
     ) {
-      console.log("auto cashback at", autoCashoutRef.current);
-      console.log(showMultiplier.toFixed(2), ">=");
-      console.log(autoCashoutRef.current.toFixed(2));
+      // console.log("auto cashback at", autoCashoutRef.current);
+      // console.log(showMultiplier.toFixed(2), ">=");
+      // console.log(autoCashoutRef.current.toFixed(2));
       handleCashout(betAmount);
     }
   }, [showMultiplier]);
@@ -91,7 +91,8 @@ function CrashGame() {
     let profit = false;
     let crashValue;
 
-    if (temp > 0.2) profit = true;
+    if (temp > 0.3) 
+      profit = true;
 
     if (profit) {
       crashValue = (temp - 0.2) * 10;
@@ -101,13 +102,18 @@ function CrashGame() {
 
   function displayMultiplier(crashAt: number) {
     let val = 1;
+    setShowMultiplier(1);
     const intervalID = setInterval(() => {
-      if (crashAt <= val) {
+      if (crashAt == 1 || crashAt.toFixed(2) <= val.toFixed(2) ) {
+        console.log("val is", val)
+        console.log("crash at", crashAt)
         clearInterval(intervalID);
-        handleCrash();
+        handleCrash();  
       }
+      else if(crashAt != 1 ){
       val = val + 0.01;
       setShowMultiplier(val);
+    }
     }, 10);
   }
 
@@ -174,9 +180,7 @@ function CrashGame() {
           </div>
 
           <div className="game-info">
-            <div className={"balance-container"}>
-              Balance: {balance}
-            </div>
+            <div className={"balance-container"}>Balance: {balance}</div>
 
             <Formik
               initialValues={{
@@ -191,9 +195,9 @@ function CrashGame() {
                 if (!start) {
                   if (balance - Number(values.betAmount) >= 0) {
                     setBetAmount(Number(values.betAmount));
-                    console.log("cashout value entered", values.cashoutAt);
+                    // console.log("cashout value entered", values.cashoutAt);
                     autoCashoutRef.current = Number(values.cashoutAt);
-                    console.log("selected cashout at", autoCashoutRef.current);
+                    // console.log("selected cashout at", autoCashoutRef.current);
                     betSubmitted(values.betAmount);
                   } else toast.error("Insufficient Funds");
                 } else if (start && !stop)
@@ -221,17 +225,25 @@ function CrashGame() {
                 <br />
 
                 <label htmlFor="cashoutAt">Cashout At</label>
+
                 <Field
                   name="cashoutAt"
                   className="input-field"
                   type="number"
-                  min={1}
-                  onKeyDown={(e: KeyboardEvent) => {
-                    if (e.key == "-" || e.key == "e") {
+                  min={1.01}  
+                  step="0.01"
+                  onKeyDown={(e: React.KeyboardEvent<HTMLInputElement>) => {
+                    if (
+                      e.key === "-" ||
+                      e.key === "e" ||
+                      e.key === "E" ||
+                      (e.key === "." && e.currentTarget.value.includes("."))
+                    ) {
                       e.preventDefault();
                     }
                   }}
                 />
+
                 <ErrorMessage
                   name="cashoutAt"
                   component="div"
@@ -255,7 +267,6 @@ function CrashGame() {
           </div>
         </div>
       </div>
-
     </>
   );
 }
