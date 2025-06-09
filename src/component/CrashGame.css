@@ -36,8 +36,8 @@
 
 .game-display img {
   width: 17%;
-  margin-top: 30%;
-  margin-left: 10%;
+  margin-top: 45%;
+  margin-left: 2%;
 }
 
 .game-info {
@@ -157,6 +157,7 @@
   
 .vertical-line{
   margin-left: 10%;
+  margin-top: 2%;
   width: 1px;
   height:580px;
   display: flex;
@@ -165,11 +166,12 @@
 }
 
 .horizontal-line{
-  margin-left: 10%;
+  margin-left: -8%;
   height: 1px;
   width:1060px;
   display: flex;
-  justify-content: space-around;
+  justify-content: right;
+  gap:19%;
 }
 
 .chart-box{

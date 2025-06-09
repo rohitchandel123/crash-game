@@ -26,7 +26,7 @@ function CrashGame() {
 
   useEffect(() => {
     tl.current = gsap.timeline({ paused: true });
-    tl.current.to(".plane", { x: 550, y: -250, duration: 9, rotation: -15 });
+    tl.current.to(".plane", { x: 780, y: -400, duration: 9, rotation: -15 });
     // tl.current.to(".plane", { x: 550, y: -250, duration: 4, rotation: -15 }, "4");
 
     return () => {
@@ -91,11 +91,11 @@ function CrashGame() {
     let profit = false;
     let crashValue;
 
-    if (temp > 0.3) 
+    if (temp > 0.1) 
       profit = true;
 
     if (profit) {
-      crashValue = (temp - 0.2) * 10;
+      crashValue = (temp - 0) * 10;
     } else crashValue = 1;
     return crashValue;
   }
