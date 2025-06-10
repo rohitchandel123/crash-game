@@ -195,12 +195,6 @@ function CrashGame() {
 
             <div className="game-display">
               <img src={ProjectImages.PLANE} className="plane" />
-              {/* crash animation  */}
-              <div className="plane checking">
-                {stop ?<img src={ProjectImages.CRASH}/>:<img src={ProjectImages.PLANE}/>}
-              </div>
-
-
               <div className="time-box">
                 {" "}
                 <h4>{timeCount}s</h4>
