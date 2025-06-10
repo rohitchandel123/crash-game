@@ -10,7 +10,11 @@ import GameChart from "./GameChart";
 
 gsap.registerPlugin(useGSAP);
 
-const TIME_DURATON = 8;
+const TIME_DURATON = 9;
+const PLANE_ROTATION = -15;
+const X_INITIAL = 780;
+const Y_INITIAL = -450;
+const BG_DURATION = 30;
 
 function CrashGame() {
   const container = useRef<HTMLDivElement | null>(null);
@@ -26,37 +30,44 @@ function CrashGame() {
   const [betAmount, setBetAmount] = useState<number>(0);
   const autoCashoutRef = useRef<number | null>(null);
   const multiplierCrashValue = useRef(0);
-  
+
   const [timeCount, setTimeCount] = useState(0);
   const timeRef = useRef<any>(null);
 
-  useEffect(()=>{
-    if(start){
+  useEffect(() => {
+    if (start) {
       setTimeCount(0);
       let timeValue = 0;
-      timeRef.current = setInterval(()=>{
-        if(!start){  
+      timeRef.current = setInterval(() => {
+        if (!start) {
           clearInterval(timeRef.current);
         }
-        setTimeCount(timeValue+1);
-        console.log(++timeValue)
-      },1000);
+        setTimeCount(timeValue + 1);
+        console.log(++timeValue);
+      }, 1000);
     }
-    return ()=>{
-      clearInterval(timeRef.current)
-    }
-  },[start])
-
+    return () => {
+      clearInterval(timeRef.current);
+    };
+  }, [start]);
 
   useEffect(() => {
     tl.current = gsap.timeline({ paused: true });
-    tl.current.to(".plane", { x: 780, y: -500, duration: TIME_DURATON, rotation: -15 });
+    tl.current.to(".plane", {
+      x: X_INITIAL,
+      y: Y_INITIAL,
+      duration: TIME_DURATON,
+      rotation: PLANE_ROTATION,
+    });
 
     tm.current = gsap.timeline({ paused: true });
-    tm.current.to(".time-box", { x: 780, duration: TIME_DURATON });
+    tm.current.to(".time-box", { x: X_INITIAL, duration: TIME_DURATON });
 
     multi.current = gsap.timeline({ paused: true });
-    multi.current.to(".multiplier-box", { y: -500, duration: TIME_DURATON });
+    multi.current.to(".multiplier-box", {
+      y: Y_INITIAL,
+      duration: TIME_DURATON,
+    });
 
     return () => {
       if (tl.current) tl.current.kill();
@@ -101,7 +112,7 @@ function CrashGame() {
         }
 
         bgTween.current = gsap.to(".background-image", {
-          duration: 30,
+          duration: BG_DURATION,
           backgroundPosition: "-10500px 0px",
           ease: "none",
           repeat: -1,
@@ -157,7 +168,7 @@ function CrashGame() {
         val = val + 0.01;
         setShowMultiplier(val);
       }
-    }, 10);
+    }, 25);
   }
 
   function betSubmitted(betAmount: string) {
@@ -184,9 +195,22 @@ function CrashGame() {
 
             <div className="game-display">
               <img src={ProjectImages.PLANE} className="plane" />
-              <div className="time-box"> <h4>{timeCount}s</h4><h4>|</h4></div>
-              <div className="multiplier-box"><span>__</span><h4>{showMultiplier.toFixed(2)}</h4></div>
-    
+              {/* crash animation  */}
+              <div className="plane checking">
+                {stop ?<img src={ProjectImages.CRASH}/>:<img src={ProjectImages.PLANE}/>}
+              </div>
+
+
+              <div className="time-box">
+                {" "}
+                <h4>{timeCount}s</h4>
+                <h4>|</h4>
+              </div>
+              <div className="multiplier-box">
+                <span>__</span>
+                <h4>{showMultiplier.toFixed(2)}</h4>
+              </div>
+
               <GameChart />
 
               <div className="bet-multiplier">

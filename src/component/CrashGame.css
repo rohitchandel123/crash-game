@@ -213,7 +213,16 @@
   position: absolute;
   text-align: center;
     margin: 50% 2% 3% 8%;
+}
 
+
+
+.checking{
+  position: absolute;
+  width: 17%;
+  margin-top: 30%;
+  margin-left: 1.5%;
+  z-index: 100;
 }
 
 
