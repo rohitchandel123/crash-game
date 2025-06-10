@@ -26,10 +26,29 @@ function CrashGame() {
   const [betAmount, setBetAmount] = useState<number>(0);
   const autoCashoutRef = useRef<number | null>(null);
   const multiplierCrashValue = useRef(0);
+  const [countValue, setCountValue] = useState(0);
+  const countRef  = useRef<any>(null);
+
+
+  // useEffect(()=>{
+  //   if(start){
+  //   setCountValue(0);
+  //   countRef.current = setInterval(()=>{
+  //     setCountValue(countValue+1)
+  //   },1000)
+  // }
+  // if(stop)
+  //   clearInterval(countRef.current)
+  // },[start]);
 
   useEffect(() => {
     tl.current = gsap.timeline({ paused: true });
-    tl.current.to(".plane", { x: 780, y: -500, duration: TIME_DURATON, rotation: -15 });
+    tl.current.to(".plane", {
+      x: 780,
+      y: -500,
+      duration: TIME_DURATON,
+      rotation: -15,
+    });
 
     tm.current = gsap.timeline({ paused: true });
     tm.current.to(".time-box", { x: 780, duration: TIME_DURATON });
@@ -163,9 +182,16 @@ function CrashGame() {
 
             <div className="game-display">
               <img src={ProjectImages.PLANE} className="plane" />
-              <div className="time-box"> <h4>{showMultiplier.toFixed(0)}s</h4><h4>|</h4></div>
-              <div className="multiplier-box"><span>__</span><h4>{showMultiplier.toFixed(2)}</h4></div>
-    
+              <div className="time-box">
+                {" "}
+                <h5>{countValue}s</h5>
+                <h4>|</h4>
+              </div>
+              <div className="multiplier-box">
+                <span>__</span>
+                <h5>{showMultiplier.toFixed(2)}</h5>
+              </div>
+
               <GameChart />
 
               <div className="bet-multiplier">
