@@ -10,28 +10,71 @@ import GameChart from "./GameChart";
 
 gsap.registerPlugin(useGSAP);
 
+const TIME_DURATON = 9;
+const PLANE_ROTATION = -15;
+const X_INITIAL = 780;
+const Y_INITIAL = -450;
+const BG_DURATION = 30;
+
 function CrashGame() {
   const container = useRef<HTMLDivElement | null>(null);
   const [start, setStart] = useState(false);
   const bgTween = useRef<gsap.core.Tween | null>(null);
   const tl = useRef<gsap.core.Timeline | null>(null);
+  const tm = useRef<gsap.core.Timeline | null>(null);
+  const multi = useRef<gsap.core.Timeline | null>(null);
   const [stop, setStop] = useState(false);
   const [showMultiplier, setShowMultiplier] = useState(1);
   const [balance, setBalance] = useState<number>(10000);
   const [hasCashout, setHasCashout] = useState<boolean>(false);
-  // const [hasCrashed, setHasCrashed] = useState<boolean>(false);
   const [betAmount, setBetAmount] = useState<number>(0);
   const autoCashoutRef = useRef<number | null>(null);
   const multiplierCrashValue = useRef(0);
 
+  const [timeCount, setTimeCount] = useState(0);
+  const timeRef = useRef<any>(null);
+
+  useEffect(() => {
+    if (start) {
+      setTimeCount(0);
+      let timeValue = 0;
+      timeRef.current = setInterval(() => {
+        if (!start) {
+          clearInterval(timeRef.current);
+        }
+        setTimeCount(timeValue + 1);
+        console.log(++timeValue);
+      }, 1000);
+    }
+    return () => {
+      clearInterval(timeRef.current);
+    };
+  }, [start]);
+
   useEffect(() => {
     tl.current = gsap.timeline({ paused: true });
-    tl.current.to(".plane", { x: 780, y: -400, duration: 9, rotation: -15 });
-    // tl.current.to(".plane", { x: 550, y: -250, duration: 4, rotation: -15 }, "4");
+    tl.current.to(".plane", {
+      x: X_INITIAL,
+      y: Y_INITIAL,
+      duration: TIME_DURATON,
+      rotation: PLANE_ROTATION,
+    });
+
+    tm.current = gsap.timeline({ paused: true });
+    tm.current.to(".time-box", { x: X_INITIAL, duration: TIME_DURATON });
+
+    multi.current = gsap.timeline({ paused: true });
+    multi.current.to(".multiplier-box", {
+      y: Y_INITIAL,
+      duration: TIME_DURATON,
+    });
 
     return () => {
       if (tl.current) tl.current.kill();
       if (bgTween.current) bgTween.current.kill();
+
+      if (tm.current) tm.current.kill();
+      if (multi.current) multi.current.kill();
     };
   }, []);
 
@@ -43,9 +86,6 @@ function CrashGame() {
         Number(autoCashoutRef.current.toFixed(2)) &&
       !hasCashout
     ) {
-      // console.log("auto cashback at", autoCashoutRef.current);
-      // console.log(showMultiplier.toFixed(2), ">=");
-      // console.log(autoCashoutRef.current.toFixed(2));
       handleCashout(betAmount);
     }
   }, [showMultiplier]);
@@ -61,8 +101,18 @@ function CrashGame() {
           tl.current.play();
         }
 
+        if (tm.current) {
+          tm.current.restart();
+          tm.current.play();
+        }
+
+        if (multi.current) {
+          multi.current.restart();
+          multi.current.play();
+        }
+
         bgTween.current = gsap.to(".background-image", {
-          duration: 30,
+          duration: BG_DURATION,
           backgroundPosition: "-10500px 0px",
           ease: "none",
           repeat: -1,
@@ -72,6 +122,12 @@ function CrashGame() {
       if (stop) {
         if (tl.current) {
           tl.current.kill();
+        }
+        if (tm.current) {
+          tm.current.kill();
+        }
+        if (multi.current) {
+          multi.current.kill();
         }
         if (bgTween.current) {
           bgTween.current.kill();
@@ -91,8 +147,7 @@ function CrashGame() {
     let profit = false;
     let crashValue;
 
-    if (temp > 0.3) 
-      profit = true;
+    if (temp > 0.3) profit = true;
 
     if (profit) {
       crashValue = (temp - 0.2) * 10;
@@ -104,17 +159,16 @@ function CrashGame() {
     let val = 1;
     setShowMultiplier(1);
     const intervalID = setInterval(() => {
-      if (crashAt == 1 || crashAt.toFixed(2) <= val.toFixed(2) ) {
-        console.log("val is", val)
-        console.log("crash at", crashAt)
+      if (crashAt == 1 || crashAt.toFixed(2) <= val.toFixed(2)) {
+        console.log("val is", val);
+        console.log("crash at", crashAt);
         clearInterval(intervalID);
-        handleCrash();  
+        handleCrash();
+      } else if (crashAt != 1) {
+        val = val + 0.01;
+        setShowMultiplier(val);
       }
-      else if(crashAt != 1 ){
-      val = val + 0.01;
-      setShowMultiplier(val);
-    }
-    }, 10);
+    }, 25);
   }
 
   function betSubmitted(betAmount: string) {
@@ -141,13 +195,22 @@ function CrashGame() {
 
             <div className="game-display">
               <img src={ProjectImages.PLANE} className="plane" />
+              <div className="time-box">
+                {" "}
+                <h4>{timeCount}s</h4>
+                <h4>|</h4>
+              </div>
+              <div className="multiplier-box">
+                <span>__</span>
+                <h4>{showMultiplier.toFixed(2)}</h4>
+              </div>
 
               <GameChart />
 
               <div className="bet-multiplier">
-                <h2 className={stop ? "has-crashed" : ""}>
+                <h1 className={stop ? "has-crashed" : ""}>
                   {start || stop ? `${showMultiplier.toFixed(2)}x` : ""}
-                </h2>
+                </h1>
 
                 {hasCashout || (stop && !hasCashout) ? (
                   <div className="cash-crash-modal">
@@ -230,7 +293,7 @@ function CrashGame() {
                   name="cashoutAt"
                   className="input-field"
                   type="number"
-                  min={1.01}  
+                  min={1.01}
                   step="0.01"
                   onKeyDown={(e: React.KeyboardEvent<HTMLInputElement>) => {
                     if (
